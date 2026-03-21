@@ -1,0 +1,151 @@
+local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
+local CoreGui = game:GetService("CoreGui")
+
+local player = Players.LocalPlayer
+local hidden = false
+local saved = {}
+
+local targets = {
+    "discord.gg/icehub",
+    "chocola",
+    "ice hub",
+    "auto grab",
+    "chocola desync",
+    "desync"
+}
+
+local function freezeAnimations(character)
+    local humanoid = character:WaitForChild("Humanoid")
+
+    for _, track in pairs(humanoid:GetPlayingAnimationTracks()) do
+        track:Stop()
+    end
+
+    local animate = character:FindFirstChild("Animate")
+    if animate then
+        animate.Disabled = true
+    end
+
+    humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+end
+
+if player.Character then
+    freezeAnimations(player.Character)
+end
+
+player.CharacterAdded:Connect(function(char)
+    task.wait(1)
+    freezeAnimations(char)
+end)
+
+local function contains(text)
+    if not text then return false end
+    text = string.lower(tostring(text))
+
+    for _, v in pairs(targets) do
+        if string.find(text, v, 1, true) then
+            return true
+        end
+    end
+    return false
+end
+
+local function isRobloxCore(gui)
+    local n = string.lower(gui.Name)
+
+    return (
+        string.find(n, "roblox") or
+        string.find(n, "core") or
+        string.find(n, "chat") or
+        string.find(n, "topbar") or
+        string.find(n, "menu")
+    )
+end
+
+local function guiMatches(gui)
+    for _, obj in pairs(gui:GetDescendants()) do
+        if contains(obj.Name) then return true end
+
+        if obj:IsA("TextLabel") or obj:IsA("TextButton") then
+            if contains(obj.Text) then return true end
+        end
+
+        if obj:IsA("TextBox") then
+            if contains(obj.Text) or contains(obj.PlaceholderText) then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+local function getAllGuis()
+    local list = {}
+
+    for _, v in pairs(player.PlayerGui:GetChildren()) do
+        if v:IsA("ScreenGui") then
+            table.insert(list, v)
+        end
+    end
+
+    for _, v in pairs(CoreGui:GetChildren()) do
+        if v:IsA("ScreenGui") and not isRobloxCore(v) then
+            table.insert(list, v)
+        end
+    end
+
+    return list
+end
+
+task.spawn(function()
+    while true do
+        if hidden then
+            for _, gui in pairs(getAllGuis()) do
+                if guiMatches(gui) then
+                    if saved[gui] == nil then
+                        saved[gui] = gui.Enabled
+                    end
+                    gui.Enabled = false
+                end
+            end
+        end
+        task.wait(0.3)
+    end
+end)
+
+local function toggleGuis()
+    hidden = not hidden
+
+    if not hidden then
+        for gui, state in pairs(saved) do
+            if gui and gui.Parent then
+                gui.Enabled = state
+            end
+        end
+        saved = {}
+    end
+end
+
+local function randomTP()
+    local char = player.Character
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        local hrp = char.HumanoidRootPart
+
+        local x = math.random(-20000, 20000)
+        local z = math.random(-20000, 20000)
+        local y = 500
+
+        hrp.CFrame = CFrame.new(x, y, z)
+    end
+end
+
+UIS.InputBegan:Connect(function(input, gp)
+    if gp then return end
+
+    if input.KeyCode == Enum.KeyCode.M then
+        toggleGuis()
+    elseif input.KeyCode == Enum.KeyCode.X then
+        randomTP()
+    end
+end)
