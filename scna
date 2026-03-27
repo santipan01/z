@@ -8,10 +8,8 @@ local saved = {}
 
 local targets = {
     "discord.gg/icehub",
-    "chocola",
     "ice hub",
     "auto grab",
-    "chocola desync",
     "desync"
 }
 
