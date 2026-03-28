@@ -10,7 +10,9 @@ local targets = {
     "discord.gg/icehub",
     "ice hub",
     "auto grab",
-    "desync"
+    "desync",
+    "esp minas",
+    "insta respawn"
 }
 
 local function freezeAnimations(character)
